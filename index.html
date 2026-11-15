@@ -1,0 +1,299 @@
+﻿<title>Votación Cabo Frío</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap">
+<style>
+/* Layout: sticky header with vote counter, ranking strip, responsive card grid with photo carousels, lightbox. Airbnb palette: Rausch red on white. */
+:root{
+  --bg:#ffffff; --surface:#ffffff; --soft:#f7f7f7; --fg:#222222; --muted:#6a6a6a; --line:#dddddd;
+  --accent:#ff385c; --accent-press:#e00b41; --accent-soft:#fff0f2; --on-accent:#ffffff; --star:#222222;
+  --shadow:0 6px 16px rgba(0,0,0,.12);
+  --font:"DM Sans",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121212; --surface:#1c1c1c; --soft:#262626; --fg:#f2f2f2; --muted:#a3a3a3; --line:#3a3a3a;
+  --accent:#ff5a78; --accent-press:#ff7a92; --accent-soft:#3a1a21; --on-accent:#ffffff; --star:#f2f2f2;
+  --shadow:0 6px 16px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121212; --surface:#1c1c1c; --soft:#262626; --fg:#f2f2f2; --muted:#a3a3a3; --line:#3a3a3a;
+  --accent:#ff5a78; --accent-press:#ff7a92; --accent-soft:#3a1a21; --on-accent:#ffffff; --star:#f2f2f2;
+  --shadow:0 6px 16px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1240px;margin:0 auto}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
+  margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+.bar{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:34px;height:34px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark svg{width:20px;height:20px;fill:var(--on-accent)}
+.brand h1{font-size:19px;line-height:1.1;margin:0;font-weight:800;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.meter{display:flex;align-items:center;gap:10px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:7px 8px 7px 14px;font-weight:600;font-size:14px}
+.dots{display:flex;gap:5px}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);display:block}
+.dots i.on{background:var(--accent)}
+.me{font:600 13px var(--font);color:var(--accent);background:none;border:0;padding:4px 6px;cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.me:hover{text-decoration:underline}
+.intro{padding:26px 0 8px}
+.intro h2{font-size:clamp(24px,4vw,34px);line-height:1.15;margin:0 0 6px;font-weight:800;letter-spacing:-.02em;text-wrap:balance}
+.intro p{margin:0;color:var(--muted);max-width:62ch}
+.notice{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--line);font-size:14px}
+.rank{margin:20px 0 4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rank b{font-size:13px;color:var(--muted);font-weight:600;margin-right:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--fg)}
+.chip em{font-style:normal;background:var(--accent);color:var(--on-accent);border-radius:999px;min-width:22px;text-align:center;padding:0 6px;font-size:12px;line-height:20px}
+.chip:hover{border-color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:32px 22px;margin-top:22px}
+.card{min-width:0;display:flex;flex-direction:column;gap:12px;scroll-margin-top:90px}
+.photos{position:relative;aspect-ratio:1/0.92;border-radius:18px;overflow:hidden;background:var(--soft)}
+.track{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.track::-webkit-scrollbar{display:none}
+.track button{flex:0 0 100%;scroll-snap-align:center;border:0;padding:0;background:none;cursor:zoom-in;height:100%}
+.track img{width:100%;height:100%;object-fit:cover;display:block}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#222;
+  display:grid;place-items:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3);opacity:0;transition:opacity .15s}
+.photos:hover .nav,.nav:focus-visible{opacity:1}
+.nav.l{left:10px}.nav.r{right:10px}
+.nav svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:none){.nav{opacity:.95}}
+.count{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
+.badge{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.95);color:#222;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.info h3{margin:0;font-size:17px;line-height:1.3;font-weight:700;text-wrap:balance}
+.kind{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:3px;color:var(--muted);font-size:14px}
+.rate{display:inline-flex;align-items:center;gap:4px;color:var(--fg);font-weight:600;white-space:nowrap}
+.rate svg{width:13px;height:13px;fill:var(--star)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0 0;padding:0;list-style:none;color:var(--fg);font-size:14px}
+.facts li+li::before{content:"·";margin-right:14px;color:var(--muted)}
+.price{margin:10px 0 0;display:flex;align-items:baseline;gap:6px 8px;flex-wrap:wrap;font-size:15px}.price b{font-size:19px;font-weight:800}.price s{color:var(--muted);font-size:14px}.price span{color:var(--muted);font-size:13px}.blurb{margin:8px 0 0;color:var(--muted);font-size:14px}
+.dates{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.voters{display:flex;align-items:center;gap:6px;min-height:28px;flex-wrap:wrap}
+.voters .n{font-weight:700;font-size:14px;margin-right:4px}
+.av{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--bg);margin-left:-8px;background:var(--soft)}
+.av:first-of-type{margin-left:0}
+.vnames{font-size:13px;color:var(--muted);flex:1 1 100%;min-width:0;overflow-wrap:anywhere}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{flex:1 1 140px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:12px;font:600 15px var(--font);cursor:pointer;text-decoration:none;border:1px solid var(--fg);background:var(--surface);color:var(--fg)}
+.btn:hover{background:var(--soft)}
+.btn.vote{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.vote:hover{background:var(--accent-press);border-color:var(--accent-press)}
+.btn.vote.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.btn.vote.on:hover{background:var(--accent-soft)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{width:18px;height:18px;flex:none}
+.heart{fill:none;stroke:currentColor;stroke-width:2.2}
+.on .heart{fill:currentColor}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:
+  calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb img{max-width:100%;max-height:calc(100% - 64px);object-fit:contain;border-radius:8px}
+.lb .cap{color:#fff;margin-top:12px;font-size:14px;text-align:center}
+.lb button{position:absolute;border:0;background:rgba(255,255,255,.16);color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.lb button:hover{background:rgba(255,255,255,.3)}
+.lb button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.lb .x{top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px))}
+.lb .pl{left:max(12px,env(safe-area-inset-left,0px));top:50%}
+.lb .pr{right:max(12px,env(safe-area-inset-right,0px));top:50%}
+.nm .box{background:var(--surface);color:var(--fg);border-radius:18px;padding:24px;width:min(420px,100%);display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}.nm h2{margin:0;font-size:22px;font-weight:800}.nm p{margin:0;color:var(--muted);font-size:14px}.nm label{font-weight:600;font-size:14px;margin-top:6px}.nm input{font:500 16px var(--font);padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}.nm input:focus{outline:2px solid var(--accent);border-color:var(--accent)}.nm .er{color:var(--accent);font-weight:600}.nm .row{display:flex;gap:10px;margin-top:8px}.nm .btn{flex:1 1 0}.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;font-size:14px;z-index:120;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top"><div class="bar">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="11" r="5"/><path d="M3 22c3.500 0 3.500-2.500 6.500-2.500S13 22 16 22s3.500-2.500 6.500-2.500S26 22 29 22v3c-3 0-3.500-2.500-6.500-2.500S19 25 16 25s-3.500-2.500-6.500-2.500S6 25 3 25z"/></svg></div>
+    <div><h1>Cabo Frío 2027</h1><p>Elegí hasta 3 alojamientos</p></div>
+  </div>
+  <div class="meter" id="meter" aria-live="polite"><span id="meterTxt">Cargando votos…</span><span class="dots" id="dots"></span><button class="me" id="me" type="button"></button></div>
+</div></header>
+
+<section class="intro">
+  <h2>¿Dónde nos quedamos?</h2>
+  <p>Mirá las fotos de cada alojamiento y votá hasta 3. Todos los votos valen lo mismo y podés cambiar tu elección cuando quieras. Al votar te pedimos tu nombre y apellido; no hace falta crear ninguna cuenta. Fechas pedidas: 5 personas, del 4 al 11 de febrero de 2027.</p>
+  <div class="notice" id="notice" hidden></div>
+</section>
+
+<div class="rank" id="rank" hidden></div>
+<main class="grid" id="grid"></main>
+<footer>Fotos, datos y precios de Airbnb, consultados el 15/11/2026 para 5 huéspedes del 4 al 11 de febrero de 2027. Los precios pueden cambiar: confirmalos en cada publicación.</footer>
+</div>
+
+<script>
+const BASE = "https://www.airbnb.com.ar/rooms/";
+const L = [
+ {id:"a1",price:1646,orig:1807,room:"1355581146397189523",ci:"2027-02-04",co:"2027-02-11",title:"Cabo Frio 503 – Cubierta superior para jacuzzi",kind:"Departamento en complejo residencial",rating:"4,97",beds:["2 dormitorios","5 camas","2 baños"],blurb:"Moderno y elegante, en el mejor barrio de la ciudad, con naturaleza y mar cerca."},
+ {id:"a2",price:1162,orig:1286,room:"1110365951944118903",ci:"2027-02-04",co:"2027-02-11",title:"Mar desde la ventana, frente a la playa",kind:"Departamento entero",rating:"4,96",beds:["3 dormitorios","3 camas","1 baño"],blurb:"A 300 m de Praia das Dunas y a 5 minutos a pie de Praia do Forte. Aire acondicionado en 2 habitaciones."},
+ {id:"a3",price:1298,orig:1570,room:"1763256975440646748",ci:"2027-02-04",co:"2027-02-11",title:"Vista al mar y al atardecer",kind:"Departamento entero",rating:"5,0",beds:["2 dormitorios","3 camas","2 baños"],blurb:"Tranquilo y elegante, con vista despejada al mar y luz de atardecer."},
+ {id:"a4",price:1405,orig:1555,room:"1682891655544541371",ci:"2027-02-04",co:"2027-02-11",title:"Frente al mar · 3 dormitorios · A 200 m de Praia do Forte",kind:"Departamento entero",rating:"5,0",beds:["3 dormitorios","5 camas","3 baños"],blurb:"Amplio, en una zona frente al mar a solo 200 m de Praia do Forte."},
+ {id:"a5",price:1016,orig:0,room:"1811793262266680106",ci:"2027-02-04",co:"2027-02-11",title:"Departamento tipo loft a 3 minutos de la playa",kind:"Departamento entero",rating:"Nuevo",beds:["2 dormitorios","3 camas","1 baño"],blurb:"Acogedor y práctico, ideal para días tranquilos cerca de la playa."},
+ {id:"a7",price:1190,orig:1322,room:"1024016052118392042",ci:"2027-02-04",co:"2027-02-11",title:"Departamento con aire acondicionado y wifi a 5 min del mar",kind:"Departamento entero",rating:"5,0",beds:["2 dormitorios","4 camas","2 baños"],blurb:"En la codiciada Praia do Forte, con brisa de mar y sonido de olas."},
+ {id:"a8",price:1301,orig:0,room:"16767725",ci:"2027-02-04",co:"2027-02-11",title:"Acogedor apartamento con vistas a Praia das Dunas",kind:"Departamento entero",rating:"4,97",beds:["3 dormitorios","5 camas","2,5 baños"],blurb:"A una cuadra de Praia das Dunas (100 m), con vista a la playa desde el balcón."}
+];
+L.forEach(x=>{x.photos=[1,2,3,4,5,6,7,8].map(n=>"img/"+x.id+"-"+n+".jpg");
+  x.url=BASE+x.room+"?adults=5&children=0&infants=0&pets=0&check_in="+x.ci+"&check_out="+x.co});
+const MAX=3;
+const SB="https://gqgwsejlverhuwuukieb.supabase.co";
+const KEY="sb_publishable__rs4hqbSNaARppIxmnRm0w_UB-UneyW";
+const H={apikey:KEY,"Content-Type":"application/json"};
+const state={votes:{},name:"",ready:false,busy:false,err:""};
+const normKey=n=>n.trim().replace(/\s+/g," ").toLowerCase();
+const goodName=n=>{const t=n.trim().replace(/\s+/g," ");return t.length>=5&&t.length<=60&&t.split(" ").length>=2};
+try{state.name=localStorage.getItem("cf_name")||""}catch(e){}
+const $=s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+const ico={
+ star:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .5l2.2 4.9 5.300.5-4 3.600 1.200 5.300L8 12.100 3.300 14.800l1.200-5.300-4-3.600 5.300-.5z"/></svg>',
+ heart:'<svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.500-4.800-9.600-9.600C1 8.200 2.800 4.500 6.400 4.500c2.200 0 3.900 1.200 5.600 3.200 1.700-2 3.400-3.200 5.600-3.200 3.600 0 5.400 3.700 4 6.900C19.500 16.200 12 21 12 21z"/></svg>',
+ ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+ l:'<svg viewBox="0 0 16 16"><path d="M10 2L4 8l6 6"/></svg>',
+ r:'<svg viewBox="0 0 16 16"><path d="M6 2l6 6-6 6"/></svg>',
+ x:'<svg viewBox="0 0 16 16"><path d="M3 3l10 10M13 3L3 13"/></svg>'
+};
+function fmt(d){const [y,m,dd]=d.split("-");const ms=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];return +dd+" "+ms[+m-1]}
+
+// ---------- render ----------
+function myPicks(){const v=state.name&&state.votes[normKey(state.name)];return v?v.picks:[]}
+function tally(){const t={};L.forEach(x=>t[x.id]=[]);Object.values(state.votes).forEach(v=>{v.picks.forEach(p=>{if(t[p])t[p].push(v.name)})});return t}
+
+function buildCards(){
+  const g=$("#grid");g.textContent="";
+  L.forEach(x=>{
+    const c=document.createElement("article");c.className="card";c.id="c-"+x.id;
+    c.innerHTML=
+     '<div class="photos"><div class="track"></div>'+
+     '<button class="nav l" aria-label="Foto anterior">'+ico.l+'</button><button class="nav r" aria-label="Foto siguiente">'+ico.r+'</button>'+
+     '<span class="count">1 / '+x.photos.length+'</span>'+(x.warn?'<span class="badge">Otras fechas</span>':'')+'</div>'+
+     '<div class="info"><div class="kind"><span></span><span class="rate"></span></div><h3></h3>'+
+     '<ul class="facts"></ul><p class="price"></p><p class="blurb"></p><p class="dates"></p></div>'+
+     '<div class="voters" aria-live="polite"></div>'+
+     '<div class="actions"><button class="btn vote"></button><a class="btn" target="_blank" rel="noopener noreferrer">Ver en Airbnb '+ico.ext+'</a></div>';
+    const tr=c.querySelector(".track");
+    x.photos.forEach((p,i)=>{const b=document.createElement("button");b.setAttribute("aria-label","Ampliar foto "+(i+1)+" de "+x.title);
+      const im=document.createElement("img");im.src=p;im.alt=x.title+", foto "+(i+1);im.loading=i<2?"eager":"lazy";im.decoding="async";
+      b.appendChild(im);b.onclick=()=>openLb(x,i);tr.appendChild(b)});
+    const cnt=c.querySelector(".count");
+    const idx=()=>Math.round(tr.scrollLeft/tr.clientWidth);
+    tr.addEventListener("scroll",()=>{cnt.textContent=(idx()+1)+" / "+x.photos.length},{passive:true});
+    c.querySelector(".nav.l").onclick=()=>tr.scrollBy({left:-tr.clientWidth,behavior:"smooth"});
+    c.querySelector(".nav.r").onclick=()=>tr.scrollBy({left:tr.clientWidth,behavior:"smooth"});
+    const sp=c.querySelectorAll(".kind span");sp[0].textContent=x.kind;
+    sp[1].innerHTML=x.rating==="Nuevo"?"Nuevo":ico.star+x.rating;
+    c.querySelector("h3").textContent=x.title;
+    x.beds.forEach(b=>{const li=document.createElement("li");li.textContent=b;c.querySelector(".facts").appendChild(li)});
+    c.querySelector(".blurb").textContent=x.blurb;
+    const pr=c.querySelector(".price"),usd=n=>"USD "+n.toLocaleString("es-AR");
+    const b1=document.createElement("b");b1.textContent=usd(x.price);pr.appendChild(b1);
+    if(x.orig){const s=document.createElement("s");s.textContent=usd(x.orig);pr.appendChild(s)}
+    const sp2=document.createElement("span");sp2.textContent="total por 7 noches · unos USD "+Math.round(x.price/5).toLocaleString("es-AR")+" por persona";pr.appendChild(sp2);
+    c.querySelector(".dates").textContent="Fechas: "+fmt(x.ci)+" al "+fmt(x.co)+" de 2027 · 5 huéspedes";
+    const a=c.querySelector("a.btn");a.href=x.url;
+    c.querySelector(".btn.vote").onclick=()=>toggle(x.id);
+    g.appendChild(c);
+  });
+}
+
+function paint(){
+  const t=tally(),mine=myPicks(),left=MAX-mine.length;
+  // meter
+  const d=$("#dots");d.textContent="";for(let i=0;i<MAX;i++){const e=document.createElement("i");if(i<mine.length)e.className="on";d.appendChild(e)}
+  $("#meterTxt").textContent=!state.ready?"Cargando votos…":!state.name?"Ingresá tu nombre para votar":left===0?"Usaste tus 3 votos":"Te quedan "+left+(left===1?" voto":" votos");
+  const me=$("#me");me.textContent=state.name?state.name+" · cambiar":"Poner mi nombre";
+  const n=$("#notice");
+  if(state.err){n.hidden=false;n.textContent=state.err}else n.hidden=true;
+  // cards
+  L.forEach(x=>{
+    const c=$("#c-"+x.id),on=mine.includes(x.id),v=t[x.id],btn=c.querySelector(".btn.vote");
+    btn.classList.toggle("on",on);
+    btn.innerHTML=ico.heart+"<span>"+(on?"Votado":"Votar")+"</span>";
+    btn.disabled=state.busy||(!on&&!!state.name&&left===0);
+    btn.title=(!on&&!!state.name&&left===0)?"Ya usaste tus 3 votos. Quitá uno para cambiar.":"";
+    const vb=c.querySelector(".voters");vb.textContent="";
+    const nn=document.createElement("span");nn.className="n";nn.textContent=v.length+(v.length===1?" voto":" votos");vb.appendChild(nn);
+    if(v.length){const nm=document.createElement("span");nm.className="vnames";nm.textContent=v.join(", ");vb.appendChild(nm)}
+  });
+  // ranking
+  const total=Object.values(t).reduce((s,a)=>s+a.length,0),r=$("#rank");
+  if(total){r.hidden=false;r.textContent="";const b=document.createElement("b");b.textContent="Ranking";r.appendChild(b);
+    L.slice().sort((a,b)=>t[b.id].length-t[a.id].length).filter(x=>t[x.id].length).forEach(x=>{
+      const ch=document.createElement("button");ch.className="chip";ch.type="button";
+      const s=document.createElement("span");s.textContent=x.title.split(/[–·|]/)[0].trim();
+      const e=document.createElement("em");e.textContent=t[x.id].length;ch.append(s,e);
+      ch.onclick=()=>$("#c-"+x.id).scrollIntoView({behavior:"smooth",block:"start"});r.appendChild(ch)})}
+  else r.hidden=true;
+}
+
+async function load(){
+  try{
+    const r=await fetch(SB+"/rest/v1/votes?select=voter_key,voter_name,picks&order=updated_at.asc",{headers:H});
+    if(!r.ok)throw new Error(r.status);
+    const rows=await r.json(),v={};
+    rows.forEach(x=>{v[x.voter_key]={name:x.voter_name,picks:(x.picks||[]).filter(i=>L.some(l=>l.id===i)).slice(0,MAX)}});
+    if(!state.busy)state.votes=v;state.ready=true;state.err="";
+  }catch(e){state.ready=true;state.err="No se pudieron cargar los votos. Revisá tu conexión y recargá la página."}
+  paint();
+}
+
+let toastT;
+function toast(m){let t=$(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}
+  t.textContent=m;clearTimeout(toastT);toastT=setTimeout(()=>t.remove(),2800)}
+
+function askName(then){
+  const m=document.createElement("div");m.className="lb nm";m.setAttribute("role","dialog");m.setAttribute("aria-modal","true");m.setAttribute("aria-labelledby","nmT");
+  m.innerHTML='<form class="box"><h2 id="nmT">¿Quién sos?</h2><p>Escribí tu nombre y apellido para que el grupo sepa quién votó cada alojamiento.</p><label for="nmI">Nombre y apellido</label><input id="nmI" autocomplete="name" maxlength="60" placeholder="Ej: Juan Pérez"><p class="er" id="nmE" hidden></p><div class="row"><button type="button" class="btn" id="nmC">Cancelar</button><button type="submit" class="btn vote">Continuar</button></div></form>';
+  const inp=m.querySelector("#nmI"),er=m.querySelector("#nmE");inp.value=state.name;
+  const close=()=>m.remove();
+  m.querySelector("#nmC").onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  m.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+  m.querySelector("form").onsubmit=e=>{e.preventDefault();
+    if(!goodName(inp.value)){er.hidden=false;er.textContent="Poné nombre y apellido (por ejemplo, Juan Pérez).";return}
+    state.name=inp.value.trim().replace(/\s+/g," ");try{localStorage.setItem("cf_name",state.name)}catch(x){}
+    close();paint();if(then)then()};
+  document.body.appendChild(m);inp.focus();inp.select();
+}
+
+async function toggle(id){
+  if(state.busy)return;
+  if(!state.name){askName(()=>toggle(id));return}
+  const key=normKey(state.name),cur=myPicks().slice(),i=cur.indexOf(id);
+  if(i>=0)cur.splice(i,1);else{if(cur.length>=MAX){toast("Ya usaste tus 3 votos. Quitá uno para cambiar.");return}cur.push(id)}
+  state.busy=true;const prev=state.votes[key];
+  if(cur.length)state.votes[key]={name:state.name,picks:cur};else delete state.votes[key];
+  paint();
+  try{
+    const r=await fetch(SB+"/rest/v1/rpc/cast_vote",{method:"POST",headers:H,body:JSON.stringify({p_name:state.name,p_picks:cur})});
+    if(!r.ok)throw new Error(r.status);state.err="";
+  }catch(e){if(prev)state.votes[key]=prev;else delete state.votes[key];state.err="No se pudo guardar tu voto. Probá de nuevo en unos segundos."}
+  state.busy=false;await load();
+}
+
+// ---------- lightbox ----------
+let lb=null;
+function openLb(x,i){
+  closeLb();let k=i;
+  lb=document.createElement("div");lb.className="lb";lb.setAttribute("role","dialog");lb.setAttribute("aria-modal","true");lb.setAttribute("aria-label","Fotos de "+x.title);
+  lb.innerHTML='<img alt=""><div class="cap"></div><button class="x" aria-label="Cerrar">'+ico.x+'</button><button class="pl" aria-label="Anterior">'+ico.l+'</button><button class="pr" aria-label="Siguiente">'+ico.r+'</button>';
+  const im=lb.querySelector("img"),cap=lb.querySelector(".cap");
+  const show=()=>{im.src=x.photos[k];im.alt=x.title+", foto "+(k+1);cap.textContent=x.title+" · "+(k+1)+" / "+x.photos.length};
+  const go=d=>{k=(k+d+x.photos.length)%x.photos.length;show()};
+  lb.querySelector(".x").onclick=closeLb;lb.querySelector(".pl").onclick=()=>go(-1);lb.querySelector(".pr").onclick=()=>go(1);
+  lb.onclick=e=>{if(e.target===lb)closeLb()};
+  lb._k=e=>{if(e.key==="Escape")closeLb();else if(e.key==="ArrowLeft")go(-1);else if(e.key==="ArrowRight")go(1)};
+  document.addEventListener("keydown",lb._k);
+  let sx=null;lb.addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+  lb.addEventListener("touchend",e=>{if(sx!==null){const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)go(dx<0?1:-1);sx=null}},{passive:true});
+  document.body.appendChild(lb);show();lb.querySelector(".x").focus();
+}
+function closeLb(){if(lb){document.removeEventListener("keydown",lb._k);lb.remove();lb=null}}
+
+// ---------- boot ----------
+buildCards();paint();
+$("#me").onclick=()=>askName();
+load();setInterval(()=>{if(!state.busy&&!document.hidden)load()},15000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!state.busy)load()});
+</script>
+
+
+
